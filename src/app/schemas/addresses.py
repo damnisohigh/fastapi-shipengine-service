@@ -1,6 +1,13 @@
-from typing import Literal
+import uuid
+from datetime import datetime
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+BatchStatus = Literal["queued", "processing", "completed", "failed"]
+ResidentialIndicator = Literal["unknown", "yes", "no"]
+ValidationStatus = Literal["verified", "unverified", "error"]
+ValidationLevel = Literal["info", "warning", "error"]
 
 
 class AddressIn(BaseModel):
@@ -18,7 +25,18 @@ class AddressIn(BaseModel):
     postal_code: str | int | None = None
     country_code: str = Field(min_length=2, max_length=2)
 
-    address_residential_indicator: Literal["unknown", "yes", "no"] | None = "unknown"
+    address_residential_indicator: ResidentialIndicator = "unknown"
+
+    @field_validator("address_residential_indicator", mode="before")
+    @classmethod
+    def normalize_residential_indicator(cls, v: Any) -> str:
+        if v is None:
+            return "unknown"
+        if isinstance(v, str):
+            vv = v.strip().lower()
+            if vv in {"unknown", "yes", "no"}:
+                return vv
+        return "unknown"
 
 
 class AddressOut(AddressIn):
@@ -28,11 +46,19 @@ class AddressOut(AddressIn):
 class ValidationMessage(BaseModel):
     code: str
     message: str
-    level: Literal["info", "warning", "error"] = "info"
+    level: ValidationLevel = "info"
 
 
 class AddressValidationResultOut(BaseModel):
-    status: Literal["verified", "unverified", "error"]
+    status: ValidationStatus
     original_address: AddressOut
     matched_address: AddressOut
-    messages: list[ValidationMessage] = []
+    messages: list[ValidationMessage] = Field(default_factory=list)
+
+
+class ValidationBatchOut(BaseModel):
+    id: uuid.UUID
+    status: BatchStatus
+    created_at: datetime
+    items_count: int = 0
+    request_payload: list[dict] | None = None
