@@ -9,9 +9,23 @@ class Settings(BaseSettings):
     )
 
     environment: str = "local"
-    database_url: str
+
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_SERVER: str
+    POSTGRES_PORT: int = 5432
+    POSTGRES_DB: str
+
     redis_url: str
     sql_echo: bool = False
+
+    @property
+    def database_url(self) -> str:
+        return (
+            "postgresql+asyncpg://"
+            f"{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
+            f"@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        )
 
 
 settings = Settings()

@@ -4,5 +4,3 @@ __pycache__
 .git
 .idea
 .DS_Store
-src/.env
-.env

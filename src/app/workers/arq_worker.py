@@ -2,7 +2,7 @@ from urllib.parse import urlparse
 from arq.connections import RedisSettings
 
 from app.core.config import settings
-from app.workers.jobs import validate_addresses_batch
+from app.workers.jobs import validate_addresses_batch, recognize_addresses_batch
 
 
 def _redis_settings_from_url(url: str) -> RedisSettings:
@@ -19,5 +19,5 @@ def _redis_settings_from_url(url: str) -> RedisSettings:
 
 class WorkerSettings:
     redis_settings = _redis_settings_from_url(settings.redis_url)
-    functions = [validate_addresses_batch]
+    functions = [validate_addresses_batch, recognize_addresses_batch]
     max_jobs = 10
