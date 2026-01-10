@@ -62,3 +62,57 @@ class ValidationBatchOut(BaseModel):
     created_at: datetime
     items_count: int = 0
     request_payload: list[dict] | None = None
+
+
+class AddressRecognizeKnownValues(BaseModel):
+    name: str | None = None
+    address_line1: str | None = None
+    address_line2: str | None = None
+    address_line3: str | None = None
+    city_locality: str | None = None
+    state_province: str | None = None
+    postal_code: str | int | None = None
+    country_code: str | None = None
+    address_residential_indicator: ResidentialIndicator | None = None
+
+
+class AddressRecognizeIn(BaseModel):
+    text: str = Field(min_length=1)
+    address: AddressRecognizeKnownValues | None = None
+
+
+class RecognizedEntityOut(BaseModel):
+    type: str
+    score: float
+    text: str | int
+    start_index: int
+    end_index: int
+    result: dict[str, Any]
+
+
+class AddressRecognitionOut(BaseModel):
+    score: float
+    address: dict[str, Any]
+    entities: list[RecognizedEntityOut]
+
+
+class PartialAddressOut(BaseModel):
+    name: str | None = None
+    phone: str | None = None
+    email: str | None = None
+    company_name: str | None = None
+
+    address_line1: str | None = None
+    address_line2: str | None = None
+    address_line3: str | None = None
+    city_locality: str | None = None
+    state_province: str | None = None
+    postal_code: str | int | None = None
+    country_code: str | None = None
+    address_residential_indicator: ResidentialIndicator | None = None
+
+
+class AddressRecognizeResultOut(BaseModel):
+    status: Literal["recognized", "error"] = "recognized"
+    original_address: PartialAddressOut
+    recognized_address: PartialAddressOut
